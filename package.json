@@ -1,0 +1,24 @@
+{
+  "name": "@canalapp/canal-gateway",
+  "version": "1.0.0",
+  "description": "Gateway server for canal",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/canalapp/canal-gateway.git"
+  },
+  "author": "Asher Foster <me@asherfoster.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/canalapp/canal-gateway/issues"
+  },
+  "homepage": "https://github.com/canalapp/canal-gateway#readme",
+  "devDependencies": {
+    "@types/node": "^12.7.8",
+    "tslint": "^5.20.0",
+    "typescript": "^3.6.3"
+  }
+}
