@@ -17,8 +17,16 @@
   },
   "homepage": "https://github.com/canalapp/canal-gateway#readme",
   "devDependencies": {
+    "@types/jest": "^24.0.18",
     "@types/node": "^12.7.8",
+    "jest": "^24.9.0",
+    "ts-jest": "^24.1.0",
     "tslint": "^5.20.0",
     "typescript": "^3.6.3"
+  },
+  "dependencies": {
+    "@canalapp/shared": "npm:@asherfoster/canal-shared@^1.1.0",
+    "@google-cloud/pubsub": "^1.1.0",
+    "ws": "^7.1.2"
   }
 }
