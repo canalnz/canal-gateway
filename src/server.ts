@@ -23,8 +23,8 @@ export class GatewayServer {
     }
   }
 
-  private async configureSubscriptions() {
-    this.scriptUpdateSub = pubsub.topic('script-update').subscription('gateway-instance');
+  private configureSubscriptions() {
+    this.scriptUpdateSub = pubsub.topic('script-updates').subscription('gateway-instance');
   }
   private onListening() {
     console.log('⚙️ Gateway is listening on port ' + this.port);

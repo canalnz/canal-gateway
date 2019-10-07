@@ -11,7 +11,7 @@ const DB_PORT = +(process.env.DB_PORT || 5432);
 const port = process.env.GATEWAY_PORT || process.env.PORT || 4000;
 
 async function main() {
-  pubsub.setup('canaldev');
+  pubsub.setup();
   // This is a separate process. We need to instantiate the DB again
   const conn = await createDbConnection({
     host: DB_HOST,
