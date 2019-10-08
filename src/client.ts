@@ -1,6 +1,7 @@
 import * as EventEmitter from 'events';
 import {getScriptLinkRepo, getScriptRepo, Script, Bot} from '@canalapp/shared/dist/db';
 import Connection from './connection';
+import {Message} from '@google-cloud/pubsub';
 
 export type IncomingEventName = 'HEARTBEAT' | 'IDENTIFY' | 'CLIENT_STATUS_UPDATE' | 'SCRIPT_STATUS_UPDATE';
 export type OutgoingEventName = 'HELLO' | 'READY' | 'SCRIPT_CREATE' | 'SCRIPT_UPDATE' | 'SCRIPT_REMOVE' | 'OPTIONS_UPDATE';
@@ -41,10 +42,45 @@ export class Client extends EventEmitter {
       }))
     });
   }
-  public send(eventName: OutgoingEventName, payload?: any) {
-    this.connection.send(eventName, payload);
+  // Called with a pubsub scriptUpdate that appears to be directed to this client
+  public async scriptUpdate(message: Message) {
+    const {action, script: scriptId} = JSON.parse(message.data.toString('utf8'));
+    const scriptRepo = getScriptRepo();
+    console.log('Oooh, a pubsub message!', action, scriptId);
+    switch (action) {
+      case 'CREATE':
+        const createdScript = await scriptRepo.findOneOrFail({id: scriptId});
+        this.send('SCRIPT_CREATE', {
+          id: createdScript.id,
+          name: createdScript.name,
+          body: createdScript.body,
+          platform: createdScript.platform
+        });
+        break;
+      case 'UPDATE':
+        const updatedScript = await scriptRepo.findOneOrFail({id: scriptId});
+        this.send('SCRIPT_UPDATE', {
+          id: updatedScript.id,
+          name: updatedScript.name,
+          body: updatedScript.body,
+          platform: updatedScript.platform
+        });
+        break;
+      case 'RESTART':
+        this.send('SCRIPT_UPDATE', {id: scriptId});
+        break;
+      case 'REMOVE':
+        this.send('SCRIPT_REMOVE', {id: scriptId});
+        break;
+      default:
+        throw new Error('Unknown script action!');
+    }
+    message.ack();
   }
 
+  private send(eventName: OutgoingEventName, payload?: any) {
+    this.connection.send(eventName, payload);
+  }
   private onMessage(eventName: string, payload: string) {
     if (eventName === 'HEARTBEAT') return; // We can ignore this, the connection handled this at a lower level
     const handlerName = this.socketEventHandlers && this.socketEventHandlers[eventName];

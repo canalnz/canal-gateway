@@ -31,7 +31,7 @@ export function authenticateConnection(connection: Connection): Promise<Bot> {
     connection.once('message', handler);
   });
 }
-async function handleIdentify(payload: {token: string, client_info: any}) {
+async function handleIdentify(payload: {token: string, client_info: any}): Promise<Bot> {
   if (!payload.token) throw new GatewayError(4001, 'token is required for identify!');
 
   const bot = await getBotRepo().findOne({apiKey: payload.token}) || null;

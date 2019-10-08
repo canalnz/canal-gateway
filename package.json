@@ -4,6 +4,7 @@
   "description": "Gateway server for canal",
   "main": "dist/index.js",
   "scripts": {
+    "start": "node dist/index.js",
     "test": "jest"
   },
   "repository": {

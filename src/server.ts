@@ -1,10 +1,10 @@
 import * as WebSocket from 'ws';
-import Client, {OutgoingEventName} from './client';
 import * as http from 'http';
+import {Subscription} from '@google-cloud/pubsub';
+import {pubsub} from '@canalapp/shared';
+import Client from './client';
 import Connection from './connection';
 import {authenticateConnection} from './doorman';
-import {pubsub} from '@canalapp/shared';
-import {Subscription} from '@google-cloud/pubsub';
 
 export class GatewayServer {
   private server: WebSocket.Server;
@@ -16,15 +16,15 @@ export class GatewayServer {
     this.server.on('listening', (...args) => this.onListening(...args));
     this.server.on('connection', (...args) => this.onConnection(...args));
   }
-  public sendEvent(clientId: string, eventName: OutgoingEventName, payload: any) {
-    if (this.clients.has(clientId)) {
-      // Just performed .has check, will exist
-      (this.clients.get(clientId) as Client).send(eventName, payload);
-    }
-  }
 
   private configureSubscriptions() {
     this.scriptUpdateSub = pubsub.topic('script-updates').subscription('gateway-instance');
+    this.scriptUpdateSub.on('message', (message) => {
+      const client = message.attributes.client;
+      if (this.clients.has(client)) {
+        this.clients.get(client).scriptUpdate(message);
+      }
+    });
   }
   private onListening() {
     console.log('⚙️ Gateway is listening on port ' + this.port);
