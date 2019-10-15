@@ -24,7 +24,7 @@ async function main() {
 
   // All of this annoying code is because GKE requires a health check running on the same port as the service
   const server = http.createServer((req, res) => {
-    if (req.url === '/system/health' && wsServer.ready) {
+    if (req.url === '/system/health') {
       const body = JSON.stringify({status: 'ok', message: 'nothing is visibly on fire!'});
 
       res.writeHead(200, {

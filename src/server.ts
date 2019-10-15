@@ -7,7 +7,6 @@ import Connection from './client/connection';
 import {authenticateConnection} from './client/doorman';
 
 export class GatewayServer {
-  public ready: boolean = false;
   private server: WebSocket.Server;
   private clients: Map<string, Client> = new Map();
   private scriptUpdateSub: Subscription;
@@ -18,7 +17,6 @@ export class GatewayServer {
   private async setup() {
     await this.configureSubscriptions();
     this.server = new WebSocket.Server({server: this.httpServer});
-    this.server.on('listening', () => this.ready = true);
     this.server.on('connection', (...args) => this.onConnection(...args));
   }
   private async configureSubscriptions() {
