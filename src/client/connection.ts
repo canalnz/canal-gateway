@@ -1,7 +1,7 @@
 import * as WebSocket from 'ws';
 import * as http from 'http';
 import * as EventEmitter from 'events';
-import GatewayError from './errors';
+import GatewayError from '../errors';
 
 const heartbeatInterval = 5 * 1000;
 const heartbeatTimeoutDuration = 11 * 1000; // Kill if two heartbeats are missed

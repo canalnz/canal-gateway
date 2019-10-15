@@ -2,11 +2,18 @@ import * as EventEmitter from 'events';
 import {getScriptLinkRepo, getScriptRepo, Script, Bot} from '@canalapp/shared/dist/db';
 import Connection from './connection';
 import {Message} from '@google-cloud/pubsub';
+import {ClientState, EventName, MessageName, ScriptState} from '../constants';
 
-export type IncomingEventName = 'HEARTBEAT' | 'IDENTIFY' | 'CLIENT_STATUS_UPDATE' | 'SCRIPT_STATUS_UPDATE';
-export type OutgoingEventName = 'HELLO' | 'READY' | 'SCRIPT_CREATE' | 'SCRIPT_UPDATE' | 'SCRIPT_REMOVE' | 'OPTIONS_UPDATE';
+interface ClientStatusUpdate {
+  state: ClientState;
+  error?: Error;
+}
+interface ScriptStatusUpdate {
+  id: string;
+  state: ScriptState;
+}
 
-function EventHandler(event: IncomingEventName) {
+function EventHandler(event: MessageName) {
   return (target: Client, propertyKey: keyof Client) => {
     target.socketEventHandlers = target.socketEventHandlers || {};
     target.socketEventHandlers[event] = propertyKey;
@@ -78,7 +85,17 @@ export class Client extends EventEmitter {
     message.ack();
   }
 
-  private send(eventName: OutgoingEventName, payload?: any) {
+  @EventHandler('CLIENT_STATUS_UPDATE')
+  public async clientStatusUpdate(state: ClientStatusUpdate) {
+
+  }
+
+  @EventHandler('SCRIPT_STATUS_UPDATE')
+  public async scriptStatusUpdate(state: ScriptStatusUpdate) {
+
+  }
+
+  private send(eventName: EventName, payload?: any) {
     this.connection.send(eventName, payload);
   }
   private onMessage(eventName: string, payload: string) {
@@ -86,7 +103,7 @@ export class Client extends EventEmitter {
     const handlerName = this.socketEventHandlers && this.socketEventHandlers[eventName];
     if (handlerName) {
       (this[handlerName] as (d: any) => void)(payload);
-    } else console.error(`🔥 Got event ${eventName} from client, but don't have a handler for it!`);
+    } else console.error(`🔥 Got message ${eventName} from client, but don't have a handler for it!`);
   }
   private onClose(code: number, message: string) {
     console.log(`Connection ${this.bot ? this.bot.name : 'anonymous'} has been closed: [${code}] ${message}`);

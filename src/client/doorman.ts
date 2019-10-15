@@ -1,5 +1,5 @@
 import Connection from './connection';
-import GatewayError from './errors';
+import GatewayError from '../errors';
 import {Bot, getBotRepo} from '@canalapp/shared/dist/db';
 
 const authTimeout = 5 * 1000; // Client must send identify within this duration

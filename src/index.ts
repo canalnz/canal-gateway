@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import {startGatewayServer} from './server';
 import {createDbConnection} from '@canalapp/shared/dist/db';
 import {pubsub} from '@canalapp/shared';
+import {startHttpServer} from './http';
 
 const DB_HOST = process.env.DB_HOST || 'localhost';
 const DB_USERNAME = process.env.DB_USERNAME || 'postgres';
@@ -21,8 +22,13 @@ async function main() {
     password: DB_PASSWORD,
     port: DB_PORT
   });
-
+  
   const server = await startGatewayServer(+port);
+
+  // This is used by kubernetes ingress to detect liveliness
+  if (process.env.NODE_ENV === 'production') {
+    const httpServer = await startHttpServer(4080);
+  }
 }
 
 main();

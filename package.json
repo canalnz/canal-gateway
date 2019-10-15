@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "start": "node dist/index.js",
+    "build": "tsc",
     "test": "jest"
   },
   "repository": {
@@ -27,7 +28,7 @@
     "typescript": "^3.6.3"
   },
   "dependencies": {
-    "@canalapp/shared": "npm:@asherfoster/canal-shared@^1.1.0",
+    "@canalapp/shared": "npm:@asherfoster/canal-shared@1.x",
     "@google-cloud/pubsub": "^1.1.0",
     "ws": "^7.1.2"
   }

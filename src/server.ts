@@ -2,23 +2,26 @@ import * as WebSocket from 'ws';
 import * as http from 'http';
 import {Subscription} from '@google-cloud/pubsub';
 import {pubsub} from '@canalapp/shared';
-import Client from './client';
-import Connection from './connection';
-import {authenticateConnection} from './doorman';
+import Client from './client/client';
+import Connection from './client/connection';
+import {authenticateConnection} from './client/doorman';
 
 export class GatewayServer {
   private server: WebSocket.Server;
   private clients: Map<string, Client> = new Map();
   private scriptUpdateSub: Subscription;
   constructor(private port: number) {
-    this.server = new WebSocket.Server({port});
-    this.configureSubscriptions();
+    this.setup();
+  }
+
+  private async setup() {
+    await this.configureSubscriptions();
+    this.server = new WebSocket.Server({port: this.port});
     this.server.on('listening', (...args) => this.onListening(...args));
     this.server.on('connection', (...args) => this.onConnection(...args));
   }
-
-  private configureSubscriptions() {
-    this.scriptUpdateSub = pubsub.topic('script-updates').subscription('gateway-instance');
+  private async configureSubscriptions() {
+    this.scriptUpdateSub = await pubsub.getSubscription('script-updates');
     this.scriptUpdateSub.on('message', (message) => {
       const client = message.attributes.client;
       if (this.clients.has(client)) {

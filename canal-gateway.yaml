@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: canal-gateway-deployment
+  labels:
+    app: canal
+    service: canal-gateway
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: canal
+      service: canal-gateway
+  template:
+    metadata:
+      labels:
+        app: canal
+        service: canal-gateway
+    spec:
+      containers:
+        - name: canal-gateway
+          image: gcr.io/canalapp/canal-gateway:1.0.0
+          imagePullPolicy: Always
+          ports:
+            - name: gateway
+              containerPort: 4000
+            - name: healthcheck
+              containerPort: 4080
+          env:
+            - name: DB_HOST
+              value: 10.97.176.3
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /etc/serviceaccount/canal-prod-backend-service-account.json
+          envFrom:
+            - secretRef:
+                name: canal-api-prod-creds
+          readinessProbe:
+            httpGet:
+              port: 4080
+              path: /system/health
+          volumeMounts:
+            - mountPath: /etc/serviceaccount
+              name: serviceaccount
+              readOnly: true
+      volumes:
+        - name: serviceaccount
+          secret:
+            secretName: canal-prod-backend-service-account
