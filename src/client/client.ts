@@ -80,9 +80,8 @@ export class Client extends EventEmitter {
         this.send('SCRIPT_REMOVE', {id: scriptId});
         break;
       default:
-        throw new Error('Unknown script action!');
+        throw new Error('Received an scriptUpdate that isn\'t recognised: ' + action);
     }
-    message.ack();
   }
 
   @EventHandler('CLIENT_STATUS_UPDATE')

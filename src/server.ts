@@ -21,11 +21,12 @@ export class GatewayServer {
   }
   private async configureSubscriptions() {
     this.scriptUpdateSub = await pubsub.getSubscription('script-updates');
-    this.scriptUpdateSub.on('message', (message) => {
+    this.scriptUpdateSub.on('message', async (message) => {
       const client = message.attributes.client;
       if (this.clients.has(client)) {
-        this.clients.get(client).scriptUpdate(message);
+        await this.clients.get(client).scriptUpdate(message);
       }
+      message.ack();
     });
   }
   private async onConnection(socket: WebSocket, request: http.IncomingMessage) {
