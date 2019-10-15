@@ -7,17 +7,18 @@ import Connection from './client/connection';
 import {authenticateConnection} from './client/doorman';
 
 export class GatewayServer {
+  public ready: boolean = false;
   private server: WebSocket.Server;
   private clients: Map<string, Client> = new Map();
   private scriptUpdateSub: Subscription;
-  constructor(private port: number) {
+  constructor(private httpServer: http.Server) {
     this.setup();
   }
 
   private async setup() {
     await this.configureSubscriptions();
-    this.server = new WebSocket.Server({port: this.port});
-    this.server.on('listening', (...args) => this.onListening(...args));
+    this.server = new WebSocket.Server({server: this.httpServer});
+    this.server.on('listening', () => this.ready = true);
     this.server.on('connection', (...args) => this.onConnection(...args));
   }
   private async configureSubscriptions() {
@@ -28,9 +29,6 @@ export class GatewayServer {
         this.clients.get(client).scriptUpdate(message);
       }
     });
-  }
-  private onListening() {
-    console.log('⚙️ Gateway is listening on port ' + this.port);
   }
   private async onConnection(socket: WebSocket, request: http.IncomingMessage) {
     console.log('👋 We have a connection from ' + request.connection.remoteAddress);
@@ -51,6 +49,6 @@ export class GatewayServer {
   }
 }
 
-export async function startGatewayServer(port: number) {
-  return new GatewayServer(port);
+export async function startGatewayServer(server: http.Server) {
+  return new GatewayServer(server);
 }

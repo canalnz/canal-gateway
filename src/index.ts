@@ -1,8 +1,7 @@
-import 'reflect-metadata';
-import {startGatewayServer} from './server';
 import {createDbConnection} from '@canalapp/shared/dist/db';
+import {startGatewayServer} from './server';
 import {pubsub} from '@canalapp/shared';
-import {startHttpServer} from './http';
+import * as http from 'http';
 
 const DB_HOST = process.env.DB_HOST || 'localhost';
 const DB_USERNAME = process.env.DB_USERNAME || 'postgres';
@@ -22,13 +21,31 @@ async function main() {
     password: DB_PASSWORD,
     port: DB_PORT
   });
-  
-  const server = await startGatewayServer(+port);
 
-  // This is used by kubernetes ingress to detect liveliness
-  if (process.env.NODE_ENV === 'production') {
-    const httpServer = await startHttpServer(4080);
-  }
+  // All of this annoying code is because GKE requires a health check running on the same port as the service
+  const server = http.createServer((req, res) => {
+    if (req.url === '/system/health' && wsServer.ready) {
+      const body = JSON.stringify({status: 'ok', message: 'nothing is visibly on fire!'});
+
+      res.writeHead(200, {
+        'Content-Length': body.length,
+        'Content-Type': 'application/json'
+      });
+      res.end(body);
+    } else {
+      const body = http.STATUS_CODES[426];
+
+      res.writeHead(426, {
+        'Content-Length': body.length,
+        'Content-Type': 'text/plain'
+      });
+      res.end(body);
+    }
+  });
+  const wsServer = await startGatewayServer(server);
+
+  server.listen(+port);
+  console.log('⚙️ Gateway is listening on port ' + port);
 }
 
 main();
