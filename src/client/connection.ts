@@ -27,7 +27,7 @@ export class Connection extends EventEmitter {
     // Coerce into a gateway error
     const gatewayErr = error instanceof GatewayError ? error : new GatewayError(4000, 'An internal error occurred');
     console.log(`Killing connection: ${gatewayErr}`);
-    this.socket.close(gatewayErr.code, this.serialize(gatewayErr.payload));
+    this.socket.close(gatewayErr.code, gatewayErr.message);
   }
   public send(eventName: string, payload?: any): void {
     console.log(`> ${eventName}`);
